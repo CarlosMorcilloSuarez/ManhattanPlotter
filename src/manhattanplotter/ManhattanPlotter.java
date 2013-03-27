@@ -51,7 +51,7 @@ import javax.swing.JTextField;
 
 public class ManhattanPlotter extends JFrame implements ActionListener,MouseListener{
 
-    static String VERSION = "1.11";
+    static String VERSION = "1.2";
 
     JPanel panel;
     JPanel tab1,tab2;
@@ -315,7 +315,8 @@ public class ManhattanPlotter extends JFrame implements ActionListener,MouseList
             }
 
             try {
-                java.net.URI uri = (new File("help/index.htm")).toURI();
+                java.net.URI uri = new java.net.URI("http://bioevo.upf.edu/~cmorcillo/tools/"
+                        + "ManhattanPlotter/ManhattanPlotter.htm");
                 desktop.browse(uri);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
