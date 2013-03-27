@@ -48,7 +48,6 @@ import javax.swing.JTextField;
 
 
 
-
 public class ManhattanPlotter extends JFrame implements ActionListener,MouseListener{
 
     static String VERSION = "1.2";
