@@ -40,12 +40,6 @@ public class QQPlot {
     double maxObservedLogValue, maxExpectedLogValue;
     String label = "";
     
-    // -- confidence interval variables
-    boolean confidenceInterval = false;
-    double[] maxConfidenceInterval;
-    double[] minConfidenceInterval;
-    int  numberOfCIMarkers;
-    int CI_PERMUTATIONS =  100;
 
     // -- graphical variables
     int xMargin = 60;
@@ -100,28 +94,6 @@ public class QQPlot {
         g.setFont(new Font("arial", 1, 35));
         g.drawString(label, IMAGE_WIDTH/7, 40);
 
-        // Draws confidence interval lines
-        if (confidenceInterval) {
-            g.setColor(Color.red);
-            int previousMinXPos = xMargin;
-            int previousMinYPos = IMAGE_HEIGHT - yMargin;
-            int previousMaxXPos = xMargin;
-            int previousMaxYPos = IMAGE_HEIGHT - yMargin;
-
-            for (int i = 0; i < orderedLog10ObservedValues.length; i++) {
-                int xPosition = xMargin + ((int) (orderedLog10ExpectedValues[i] * xIncrement));
-                int yPosition = IMAGE_HEIGHT - (yMargin + ((int) (minConfidenceInterval[i] * yIncrement)));
-
-                g.drawLine(previousMinXPos, previousMinYPos, xPosition, yPosition);
-                previousMinXPos = xPosition;
-                previousMinYPos = yPosition;
-
-                yPosition = IMAGE_HEIGHT - (yMargin + ((int) (maxConfidenceInterval[i] * yIncrement)));
-                g.drawLine(previousMaxXPos, previousMaxYPos, xPosition, yPosition);
-                previousMaxXPos = xPosition;
-                previousMaxYPos = yPosition;
-            }
-        }
 
         // Draws dots
         int dotRadius = 4;
@@ -197,69 +169,6 @@ public class QQPlot {
 
     void setLabel(String label) {
         this.label = label;
-    }
-
-    void activateConfidenceInterval(){
-        // don't calculate if there is no experiment defined
-        if(experiment == null){
-            confidenceInterval = false;
-            return;
-        }
-
-        // don't calculate if there are no markers in experiment
-        if(experiment.tests.length == 0){
-            confidenceInterval = false;
-            return;
-        }
-
-        // don't need to calculate again if it is calculated with the right
-        // number of markers
-        //if(confidenceInterval && numberOfCIMarkers == experiment.tests.length){
-        //    return;
-        //}
-
-        // calculates empirically confidence interval
-        confidenceInterval = false;
-        numberOfCIMarkers = experiment.tests.length;
-        maxConfidenceInterval = new double[numberOfCIMarkers];
-        minConfidenceInterval = new double[numberOfCIMarkers];
-
-        double[][] randomValues = new double[CI_PERMUTATIONS][numberOfCIMarkers];
-
-        // generates random p-values for markers a <permutation> number of times
-        // order values of each permutation and records all values to a matrix
-        for(int permutation=0;permutation<CI_PERMUTATIONS;permutation++){
-            double randomValuesOfThisPermutation[] = new double[numberOfCIMarkers];
-
-            // generates random p-values for this permutation
-            for(int i = 0; i < numberOfCIMarkers;i++){
-               randomValuesOfThisPermutation[i] = -Math.log10(Math.random());
-            }
-
-            // orders p-values
-            Arrays.sort(randomValuesOfThisPermutation);
-
-            // adds p-values to matrix
-            randomValues[permutation] = randomValuesOfThisPermutation;
-
-        }
-
-        // Takes all values generated in every position in all permutations
-        // order them and selects those in 5th and 95th centil
-        double[] orderedValuesForThisMarkerPosition = new double[CI_PERMUTATIONS];
-        for(int i = 0; i < numberOfCIMarkers;i++){
-           for(int permutation=0;permutation<CI_PERMUTATIONS;permutation++){
-              orderedValuesForThisMarkerPosition[permutation] = randomValues[permutation][i];
-              Arrays.sort(orderedValuesForThisMarkerPosition);
-           }
-           maxConfidenceInterval[i] = orderedValuesForThisMarkerPosition[(CI_PERMUTATIONS/100)*95];
-           minConfidenceInterval[i] = orderedValuesForThisMarkerPosition[(CI_PERMUTATIONS/100)*5];
-        }
-
-       confidenceInterval = true;
-       
-       // Cleans matrix to liberate memory
-       randomValues = new double[0][0];
     }
 
     void savePlot(String outputFileName) {

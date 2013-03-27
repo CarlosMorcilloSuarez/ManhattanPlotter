@@ -234,13 +234,6 @@ public class ManhattanPlotter extends JFrame implements ActionListener,MouseList
         Scale.addActionListener(this);
         tab1.add(Scale);
 
-        confidenceInterval = new JButton();
-        confidenceInterval.setText("CI");
-        confidenceInterval.setActionCommand("CI");
-        confidenceInterval.setBounds(350, CANVAS_HEIGHT+40, 80, 25);
-        confidenceInterval.addActionListener(this);
-        tab2.add(confidenceInterval);
-
         // textfields
         ScaleValue = new JTextField();
         ScaleValue.setBounds(100, CANVAS_HEIGHT+40, 70, 25);
@@ -375,14 +368,6 @@ public class ManhattanPlotter extends JFrame implements ActionListener,MouseList
             image1All.getGraphics().drawImage(image1, 0, 0, this);
             updateCanvas(1);
 
-        // JButton: CI
-        } else if (command.equals("CI")) {
-           if(qqPlot != null){
-               qqPlot.activateConfidenceInterval();
-               qqPlot.drawPlot();
-               qqImage.getGraphics().drawImage(qqPlot.image.getScaledInstance(qqImage.getWidth(), -1, 4), 0, 0, this);
-               updateCanvas(2);
-           }
         }
 
     }
