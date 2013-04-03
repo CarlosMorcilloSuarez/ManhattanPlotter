@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package manhattanplotter;
+package edu.upf.bioevo.manhattanPlotter;
 
 import java.awt.Color;
 import java.awt.Font;
