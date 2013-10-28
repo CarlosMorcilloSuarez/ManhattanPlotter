@@ -26,21 +26,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
+import org.apache.commons.math3.distribution.BetaDistribution;
 
-/**
- *
- * @author WS113854
- */
 public class QQPlot {
 
     Experiment experiment;
     double[] orderedLog10ObservedValues;
     double[] orderedLog10ExpectedValues;
+    double[] lowerCI;
+    double[] upperCI;
+    
+    boolean ic95Option = false;
 
     double maxObservedLogValue, maxExpectedLogValue;
     String label = "";
     
-
     // -- graphical variables
     int xMargin = 60;
     int yMargin = 60;
@@ -73,9 +73,25 @@ public class QQPlot {
         }
         maxExpectedLogValue = orderedLog10ExpectedValues[orderedLog10ExpectedValues.length-1];
 
+        // Creates CI95 upper and lower values
+        if (ic95Option) {
+            lowerCI = new double[experiment.tests.length];
+            upperCI = new double[experiment.tests.length];
+
+            for (int i = experiment.tests.length - 1; i >= 0; i--) {
+                BetaDistribution beta = new BetaDistribution(i + 1, experiment.tests.length - i);
+                lowerCI[i] = -Math.log10(beta.inverseCumulativeProbability(0.025));
+                upperCI[i] = -Math.log10(beta.inverseCumulativeProbability(0.975));
+            }
+            Arrays.sort(lowerCI);
+            Arrays.sort(upperCI);
+        }
+
+        
     }
 
     void drawPlot() {
+        int dotRadius;
         int xIncrement = (IMAGE_WIDTH-(xMargin*2))/(int)(maxExpectedLogValue+1);
         int yIncrement = (IMAGE_HEIGHT-(yMargin*2))/(int)(maxObservedLogValue+1);
         Graphics g = image.getGraphics();
@@ -89,14 +105,27 @@ public class QQPlot {
         g.drawLine(xMargin, IMAGE_HEIGHT-yMargin, IMAGE_WIDTH-xMargin,IMAGE_HEIGHT-yMargin);
         g.drawLine(xMargin, IMAGE_HEIGHT-yMargin, xMargin,yMargin);
 
-        // -- title
-        g.setColor(Color.blue);
-        g.setFont(new Font("arial", 1, 35));
-        g.drawString(label, IMAGE_WIDTH/7, 40);
+        // Draws confidence interval
+        if (ic95Option) {
+            g.setColor(Color.lightGray);
+            for (int i = 0; i < upperCI.length - 1; i++) {
+                int[] xPoints = {
+                    xMargin + (int) (orderedLog10ExpectedValues[i] * xIncrement),
+                    xMargin + (int) (orderedLog10ExpectedValues[i] * xIncrement),
+                    xMargin + (int) (orderedLog10ExpectedValues[i + 1] * xIncrement),
+                    xMargin + (int) (orderedLog10ExpectedValues[i + 1] * xIncrement)};
+                int[] yPoints = {
+                    IMAGE_HEIGHT - (yMargin + ((int) (upperCI[i] * yIncrement))),
+                    IMAGE_HEIGHT - (yMargin + ((int) (lowerCI[i] * yIncrement))),
+                    IMAGE_HEIGHT - (yMargin + ((int) (lowerCI[i + 1] * yIncrement))),
+                    IMAGE_HEIGHT - (yMargin + ((int) (upperCI[i + 1] * yIncrement)))};
 
-
+                g.fillPolygon(xPoints, yPoints, 4);
+            }
+        }
+        
         // Draws dots
-        int dotRadius = 4;
+        dotRadius = 4;
         g.setColor(Color.black);
         for(int i=0; i<orderedLog10ObservedValues.length;i++){
             int xPosition = xMargin + ((int)(orderedLog10ExpectedValues[i]*xIncrement));
@@ -160,11 +189,17 @@ public class QQPlot {
         }
 
         // Draws identity line
+        g.setColor(Color.RED);
         int endLineValue = horizontalMaxValue < verticalMaxValue ? horizontalMaxValue : verticalMaxValue;
         g.drawLine(xMargin,
                 IMAGE_HEIGHT - yMargin,
                 xMargin + ((int) (endLineValue * xIncrement)),
                 IMAGE_HEIGHT - (yMargin + ((int) (endLineValue * yIncrement))));
+
+        // -- title
+        g.setColor(Color.blue);
+        g.setFont(new Font("arial", 1, 35));
+        g.drawString(label, IMAGE_WIDTH / 7, 40);
     }
 
     void setLabel(String label) {
@@ -179,5 +214,9 @@ public class QQPlot {
 
         } catch (IOException IOe) {
         }
+    }
+    
+    void setIC95(){
+        ic95Option = true;
     }
 }

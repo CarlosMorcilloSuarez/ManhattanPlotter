@@ -50,7 +50,7 @@ import javax.swing.JTextField;
 
 public class ManhattanPlotter extends JFrame implements ActionListener,MouseListener{
 
-    static String VERSION = "1.2";
+    static String VERSION = "1.4";
 
     JPanel panel;
     JPanel tab1,tab2;
@@ -476,6 +476,7 @@ public class ManhattanPlotter extends JFrame implements ActionListener,MouseList
         int YScale = 10;
         boolean visual = true;
         boolean qqPlot = false;
+        boolean qqPlotIC95 = false;
         
         
         // Read arguments
@@ -510,6 +511,8 @@ public class ManhattanPlotter extends JFrame implements ActionListener,MouseList
                 visual = false;
             } else if (args[argument].equals("--qqplot")) {
                 qqPlot = true;
+            } else if (args[argument].equals("--IC95")) {
+                qqPlotIC95 = true;                
             } else if (args[argument].equals("--markers-list")) {
                 argument++;
                 markersListFile = args[argument];
@@ -538,6 +541,9 @@ public class ManhattanPlotter extends JFrame implements ActionListener,MouseList
 
             if (qqPlot) {
                 QQPlot plot = new QQPlot();
+                if (qqPlotIC95) {
+                    plot.setIC95();
+                }
                 plot.setExperiment(experiment);
                 plot.setLabel(label);
                 plot.drawPlot();
